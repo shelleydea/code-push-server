@@ -5,12 +5,12 @@ config.development = {
   // Config for database, only support mysql.
   db: {
     username: process.env.RDS_USERNAME || "root",
-    password: process.env.RDS_PASSWORD || null,
+    password: process.env.RDS_PASSWORD || "123456",
     database: process.env.DATA_BASE || "codepush",
     host: process.env.RDS_HOST || "127.0.0.1",
     port: process.env.RDS_PORT || 3306,
     dialect: "mysql",
-    logging: false,
+    logging: true,
     operatorsAliases: false,
   },
   // Config for qiniu (http://www.qiniu.com/) cloud storage when storageType value is "qiniu".
@@ -57,7 +57,7 @@ config.development = {
   // Config for local storage when storageType value is "local".
   local: {
     // Binary files storage dir, Do not use tmpdir and it's public download dir.
-    storageDir: process.env.STORAGE_DIR || "/Users/tablee/workspaces/storage",
+    storageDir: process.env.STORAGE_DIR || "/Users/zack/Documents/GitHub/code-push-server/storageDir",
     // Binary files download host address which Code Push Server listen to. the files storage in storageDir.
     downloadUrl: process.env.LOCAL_DOWNLOAD_URL || "http://127.0.0.1:3000/download",
     // public static download spacename.
@@ -87,6 +87,8 @@ config.development = {
     updateCheckCache: false,
     // options value is (true | false), when it's true, it will cache rollout results in redis
     rolloutClientUniqueIdCache: false,
+    zipPwd : process.env.ZIP_PWD || "CA1prX7e2kdPZbQB",
+    downloadUrlArr: process.env.DOWNLOAD_URL_ARR || ["http://127.0.0.1:3000", "http://10.111.9.5:3000"]
   },
   // Config for smtp email，register module need validate user email project source https://github.com/nodemailer/nodemailer
   smtpConfig:{
@@ -126,9 +128,9 @@ config.development = {
 config.development.log4js = {
   appenders: {console: { type: 'console'}},
   categories : {
-    "default": { appenders: ['console'], level:'error'},
-    "startup": { appenders: ['console'], level:'info'},
-    "http": { appenders: ['console'], level:'info'}
+    "default": { appenders: ['console'], level:'debug'},
+    "startup": { appenders: ['console'], level:'debug'},
+    "http": { appenders: ['console'], level:'debug'}
   }
 }
 

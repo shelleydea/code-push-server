@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var Promise = require('bluebird');
+var config    = require('../core/config');
 var AppError = require('../core/app-error');
 var middleware = require('../core/middleware');
 var ClientManager = require('../core/services/client-manager');
@@ -34,6 +35,7 @@ router.get('/update_check', (req, res, next) => {
     delete rs.rollout;
     var update_info = {
         download_url : rs.downloadUrl,
+        download_url_arr: _.get(config, 'common.downloadUrlArr'),
         description : rs.description,
         is_available : rs.isAvailable,
         is_disabled : rs.isDisabled,

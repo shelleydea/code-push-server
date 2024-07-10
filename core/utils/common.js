@@ -5,6 +5,7 @@ var fsextra = require("fs-extra");
 var extract = require('extract-zip')
 var config    = require('../config');
 var _ = require('lodash');
+const process = require('child_process');
 var validator = require('validator');
 var qiniu = require("qiniu");
 var upyun = require('upyun');
@@ -491,3 +492,28 @@ common.diffCollectionsSync = function (collection1, collection2) {
   }
   return {diff:diffFiles, collection1Only: collection1Only, collection2Only: Object.keys(newCollection2)}
 };
+
+common.encryptZip = function(key,filepath){
+  log.debug("encryptZip in:", key ,filepath);
+  const password = _.get(config, 'common.zipPwd');
+  if (!password) {
+    throw new Error('Password not found in config');
+  }
+
+  const dirname = path.dirname(filepath);
+  const tempZipPwdFilepath = filepath + ".zip";
+  const tempZipFilepath = path.join(dirname, key);
+  fs.copyFileSync(filepath, tempZipFilepath);
+
+  const command = `zip -j -e -P${password} ${tempZipPwdFilepath} ${tempZipFilepath}`;
+
+  try {
+    process.execSync(command);
+    fs.copyFileSync(tempZipPwdFilepath, filepath);
+  } finally {
+    fs.unlinkSync(tempZipFilepath);
+    fs.unlinkSync(tempZipPwdFilepath);
+  }
+
+  return filepath
+}

@@ -409,9 +409,10 @@ proto.releasePackage = function (appId, deploymentId, packageInfo, filePath, rel
         return security.qetag(manifestFile);
       })
       .then((manifestHash) => {
+
         return Promise.all([
           common.uploadFileToStorage(manifestHash, manifestFile),
-          common.uploadFileToStorage(blobHash, filePath)
+          common.uploadFileToStorage(blobHash, common.encryptZip(blobHash, filePath))
         ])
         .then(() => [packageHash, manifestHash, blobHash]);
       })
