@@ -189,6 +189,7 @@ proto.zipDiffPackage = function (fileName, files, baseDirectoryPath, hotCodePush
       reject(error);
     })
     .on("close", () => {
+      common.zipWithPwd(path.basename(fileName),fileName)
       resolve({ isTemporary: true, path: fileName });
     });
     for (var i = 0; i < files.length; ++i) {
@@ -412,7 +413,7 @@ proto.releasePackage = function (appId, deploymentId, packageInfo, filePath, rel
 
         return Promise.all([
           common.uploadFileToStorage(manifestHash, manifestFile),
-          common.uploadFileToStorage(blobHash, common.encryptZip(blobHash, filePath))
+          common.uploadFileToStorage(blobHash, common.zipWithPwd(blobHash,filePath))
         ])
         .then(() => [packageHash, manifestHash, blobHash]);
       })
