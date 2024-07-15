@@ -556,79 +556,45 @@ common.diffCollectionsSync = function (collection1, collection2) {
   };
 };
 
-common.decryptZip = function (key, filepath) {
-  log.debug("decryptZip in:", key, filepath);
-  const password = _.get(config, "common.zipPwd");
-  const originFilepath = filepath + "_back";
-  fs.copyFileSync(filepath, originFilepath);
-  const path = require("path");
-  const process = require("child_process");
-  const dirname = path.dirname(filepath);
-  const filename = path.basename(filepath);
-  const tempZipPwdFilepath = filename + ".zip";
-  const tempZipFilepath = path.join(path.resolve(""), key);
-  fs.copyFileSync(filepath, tempZipFilepath);
-  const command = `zip -e -P${password} ${tempZipPwdFilepath} ${key}`;
-  process.execSync(command);
-  fs.copyFileSync(tempZipPwdFilepath, filepath);
-  fs.unlinkSync(tempZipFilepath);
-  fs.unlinkSync(tempZipPwdFilepath);
-  fs.existsSync(originFilepath) && fs.unlinkSync(originFilepath);
-  return filepath;
-};
-
 common.zipWithPwd = function (key, filepath) {
-  const password = _.get(config, "common.zipPwd");
-  const tempFilePath = filepath + "_back";
-  log.debug(`zipWithPwd check zipFile ${filepath} fs.R_OK`);
-  fs.accessSync(filepath, fs.R_OK);
-  log.debug(`Pass zipWithPwd file ${filepath}`);
-  if (!fs.existsSync(filepath)) {
-    log.error(`${filepath} is not exist`);
-    throw new Error(`${filepath} is not exist`);
+  try {
+    fs.accessSync(filepath, fs.R_OK);
+  } catch (e) {
+    log.error(e);
+    return reject(new AppError.AppError(e.message));
   }
 
-  fs.renameSync(filepath, tempFilePath);
+  const password = _.get(config, "common.zipPwd");
+  if (!password) {
+    throw new Error('Password not found in config');
+  }
+
   const mz = new Minizip();
-  
-  mz.append(key, fs.readFileSync(tempFilePath), {
+  mz.append(key, fs.readFileSync(filepath), {
     password,
   });
 
   fs.writeFileSync(filepath, new Buffer(mz.zip()));
-  fs.existsSync(tempFilePath) && fs.unlinkSync(tempFilePath);
   return filepath;
 };
 
 common.isCryptZip = function (filepath) {
-  log.debug(`isCryptZip check zipFile ${filepath} fs.R_OK`);
-  fs.accessSync(filepath, fs.R_OK);
-  log.debug(`Pass isCryptZip file ${filepath}`);
-
-  if (!fs.existsSync(filepath)) {
-    log.error(`${filepath} is not exist`);
-    throw new Error(`${filepath} is not exist`);
-  }
   const mz = new Minizip(fs.readFileSync(filepath));
   return mz.list().some((item) => item.crypt);
 };
 
 common.unzipWithPwd = function (filepath) {
-  if (isCryptZip(filepath)) {
-    log.debug(`unzipWithPwd check zipFile ${filepath} fs.R_OK`);
-    fs.accessSync(filepath, fs.R_OK);
-    log.debug(`Pass unzipWithPwd file ${filepath}`);
-
+  if (common.isCryptZip(filepath)) {
     const password = _.get(config, "common.zipPwd");
-    const tempFilePath = filepath + "_back";
-    fs.renameSync(filepath, tempFilePath);
-    const mz = new Minizip(fs.readFileSync(tempFilePath));
+    if (!password) {
+      throw new Error('Password not found in config');
+    }
+    const mz = new Minizip(fs.readFileSync(filepath));
     const [firstZipFile] = mz.list();
     const unzipFile = mz.extract(firstZipFile.filepath, {
       password,
     });
     fs.writeFileSync(filepath, new Buffer(unzipFile));
-    fs.existsSync(tempFilePath) && fs.unlinkSync(tempFilePath);
     return filepath;
   } else {
     return filepath;
