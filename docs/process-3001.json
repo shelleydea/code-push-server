@@ -1,0 +1,18 @@
+{
+    "apps" : [
+        {
+            "name"      : "code-push-server-3001",
+            "max_memory_restart" : "300M",
+            "script"    : "../bin/www",
+            "instances"  : "2",
+            "exec_mode"  : "cluster",
+            "env" : {
+                "NODE_ENV" : "production",
+                "PORT" : 3001,
+                "CONFIG_FILE" : "../config/config.js",
+                "LOCAL_DOWNLOAD_URL" : "http://127.0.0.1:3001/download",
+                "DOWNLOAD_URL_ARR": ["http://127.0.0.1:3001", "http://10.111.9.5:3001"]
+            }
+        }
+    ]
+}

@@ -88,7 +88,7 @@ config.development = {
     // options value is (true | false), when it's true, it will cache rollout results in redis
     rolloutClientUniqueIdCache: false,
     zipPwd : process.env.ZIP_PWD || "CA1prX7e2kdPZbQB",
-    downloadUrlArr: process.env.DOWNLOAD_URL_ARR || ["http://127.0.0.1:3000", "http://10.111.9.5:3000"]
+    downloadUrlArr: JSON.parse(process.env.DOWNLOAD_URL_ARR) || ["http://127.0.0.1:3000", "http://10.111.9.5:3000"]
   },
   // Config for smtp email，register module need validate user email project source https://github.com/nodemailer/nodemailer
   smtpConfig:{
